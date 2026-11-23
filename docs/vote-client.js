@@ -1,10 +1,10 @@
-// Tiny client for the Gratitude contract. Works in the browser (global
-// `GratitudeClient`, with the StellarSdk CDN build) and in Node (require).
+// Tiny client for the Vote contract. Works in the browser (global
+// `VoteClient`, with the StellarSdk CDN build) and in Node (require).
 // `signXdr(xdr) -> Promise<signedXdr>` is provided by Freighter in the browser
 // or by a local Keypair in tests.
 (function (root, factory) {
   if (typeof module === "object" && module.exports) module.exports = factory;
-  else root.GratitudeClient = factory;
+  else root.VoteClient = factory;
 })(typeof self !== "undefined" ? self : this, function (StellarSdk, cfg) {
   const { rpc, Contract, TransactionBuilder, BASE_FEE, nativeToScVal, scValToNative, Address } = StellarSdk;
   const server = new rpc.Server(cfg.rpcUrl);
@@ -26,26 +26,36 @@
     return scValToNative(sim.result.retval);
   }
 
-  async function count() {
-    return read("count");
+  // Ranking, most votes first: [{ project, votes }].
+  async function ranking() {
+    const rows = (await read("results")) || [];
+    return rows
+      .map((r) => ({ project: String(r.project), votes: Number(r.votes) }))
+      .sort((a, b) => b.votes - a.votes || a.project.localeCompare(b.project));
   }
 
-  async function list(limit = 20) {
-    const n = await count();
-    const ids = [];
-    for (let i = n; i >= 1 && ids.length < limit; i--) ids.push(i);
-    const notes = await Promise.all(ids.map((id) => read("get", [nativeToScVal(id, { type: "u32" })])));
-    return notes.map((n, i) => ({ id: ids[i], ...n, from: String(n.from) }));
+  // Project name this wallet voted for, or null.
+  async function votedFor(voter) {
+    const v = await read("voted_for", [new Address(voter).toScVal()]);
+    return v == null ? null : String(v);
   }
 
   // Write: build -> simulate/prepare -> sign -> send -> wait.
-  async function thank(from, to, message, signXdr) {
-    const tx = await build(from, "thank", [
-      new Address(from).toScVal(),
-      nativeToScVal(to, { type: "string" }),
-      nativeToScVal(message, { type: "string" }),
+  async function vote(voter, project, signXdr) {
+    const tx = await build(voter, "vote", [
+      new Address(voter).toScVal(),
+      nativeToScVal(project, { type: "string" }),
     ]);
-    const prepared = await server.prepareTransaction(tx);
+    let prepared;
+    try {
+      prepared = await server.prepareTransaction(tx);
+    } catch (e) {
+      const m = String(e.message || e);
+      if (/Error\(Contract, #1\)/.test(m)) throw new Error("Esta wallet ya votó.");
+      if (/Error\(Contract, #2\)/.test(m)) throw new Error("El nombre del proyecto debe tener 1-64 caracteres.");
+      if (/Error\(Contract, #3\)/.test(m)) throw new Error("Ya hay demasiados proyectos; votá uno del ranking.");
+      throw e;
+    }
     const signed = TransactionBuilder.fromXDR(await signXdr(prepared.toXDR()), cfg.networkPassphrase);
     const sent = await server.sendTransaction(signed);
     if (sent.status === "ERROR") throw new Error("send failed: " + JSON.stringify(sent.errorResult));
@@ -55,8 +65,8 @@
       res = await server.getTransaction(sent.hash);
     }
     if (res.status !== "SUCCESS") throw new Error("tx " + res.status);
-    return { hash: sent.hash, id: scValToNative(res.returnValue) };
+    return { hash: sent.hash, votes: scValToNative(res.returnValue) };
   }
 
-  return { count, list, thank };
+  return { ranking, votedFor, vote };
 });

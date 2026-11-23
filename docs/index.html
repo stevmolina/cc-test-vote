@@ -3,66 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Proof of Thanks</title>
+  <title>Commit Club Vote</title>
   <style>
-    :root { --bg:#0b1020; --card:#151b31; --text:#eef1ff; --muted:#9aa3c7; --accent:#7c5cff; }
-    @media (prefers-color-scheme: light) { :root { --bg:#f6f7fb; --card:#fff; --text:#141a33; --muted:#5b6386; } }
+    :root { --bg:#0b1020; --card:#151b31; --text:#eef1ff; --muted:#9aa3c7; --accent:#7c5cff; --bar:#2a3150; }
+    @media (prefers-color-scheme: light) { :root { --bg:#f6f7fb; --card:#fff; --text:#141a33; --muted:#5b6386; --bar:#e6e8f2; } }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); }
     main { max-width: 640px; margin: 0 auto; padding: 32px 16px; }
     h1 { margin: 0 0 4px; } p.sub { color: var(--muted); margin: 0 0 24px; }
     .card { background: var(--card); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
     label { display:block; font-size: 14px; color: var(--muted); margin: 10px 0 4px; }
-    input, textarea { width:100%; padding:10px; border-radius:10px; border:1px solid #3a4266; background:transparent; color:var(--text); font: inherit; }
+    input { width:100%; padding:10px; border-radius:10px; border:1px solid #3a4266; background:transparent; color:var(--text); font: inherit; }
     button { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
     button:disabled { opacity: .5; cursor: default; }
-    .note { border-top: 1px solid #2a3150; padding: 10px 0; } .note small { color: var(--muted); }
+    .row { display:grid; grid-template-columns: 2em 1fr auto; gap: 8px; align-items:center; padding: 8px 0; border-top: 1px solid var(--bar); cursor: pointer; }
+    .row .bar { grid-column: 2 / 4; height: 6px; border-radius: 3px; background: var(--bar); overflow: hidden; }
+    .row .bar i { display:block; height:100%; background: var(--accent); }
+    .row b { overflow-wrap: anywhere; } .pos { color: var(--muted); font-weight: 600; }
     #status { color: var(--muted); font-size: 14px; min-height: 20px; word-break: break-all; }
     a { color: var(--accent); }
   </style>
 </head>
 <body>
 <main>
-  <h1>Proof of Thanks 💜</h1>
-  <p class="sub">Dejá un agradecimiento público en Stellar Testnet, firmado con tu wallet. Sin plata real.</p>
+  <h1>Commit Club Vote 🗳️</h1>
+  <p class="sub">Elegí el mejor proyecto del Commit Club. Una wallet, un voto, todo público en Stellar Testnet. Sin plata real.</p>
 
   <div class="card">
     <button id="connect">Conectar Freighter</button>
     <div id="who" class="sub"></div>
-    <label for="to">¿A quién le agradecés?</label>
-    <input id="to" maxlength="64" placeholder="Elisa" />
-    <label for="msg">¿Por qué?</label>
-    <textarea id="msg" maxlength="280" rows="3" placeholder="Por enseñarme a hacer mi primer PR"></textarea>
-    <button id="send" disabled>Enviar agradecimiento</button>
+    <label for="project">¿Qué proyecto votás? (tocá uno del ranking o escribí uno nuevo)</label>
+    <input id="project" maxlength="64" placeholder="Proof of Thanks" />
+    <button id="send" disabled>Votar</button>
     <p id="status"></p>
   </div>
 
   <div class="card">
-    <strong id="total">Agradecimientos</strong>
-    <div id="notes"></div>
+    <strong id="total">Ranking</strong>
+    <div id="ranking"></div>
   </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@stellar/stellar-sdk@17.4.0/dist/stellar-sdk.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@stellar/freighter-api@6.0.1/build/index.min.js"></script>
 <script src="config.js"></script>
-<script src="gratitude-client.js"></script>
+<script src="vote-client.js"></script>
 <script>
-  const client = GratitudeClient(StellarSdk, CONFIG);
+  const client = VoteClient(StellarSdk, CONFIG);
   const $ = (id) => document.getElementById(id);
   const status = (t) => ($("status").innerHTML = t);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
   let me = null;
 
   async function refresh() {
     try {
-      const notes = await client.list(20);
-      $("total").textContent = `Agradecimientos (${notes.length ? notes[0].id : 0})`;
-      $("notes").innerHTML = notes.map((n) =>
-        `<div class="note"><b>→ ${esc(n.to)}</b>: ${esc(n.message)}<br><small>de ${n.from.slice(0, 6)}…${n.from.slice(-4)} · #${n.id}</small></div>`
-      ).join("") || "<p class='sub'>Todavía no hay. ¡Sé el primero!</p>";
-    } catch (e) { $("notes").textContent = "No pude leer el contrato: " + e.message; }
+      const rows = await client.ranking();
+      const total = rows.reduce((s, r) => s + r.votes, 0);
+      const top = rows[0] ? rows[0].votes : 1;
+      $("total").textContent = `Ranking (${total} voto${total === 1 ? "" : "s"})`;
+      $("ranking").innerHTML = rows.map((r, i) =>
+        `<div class="row" data-p="${esc(r.project)}"><span class="pos">${["🥇","🥈","🥉"][i] || i + 1}</span><b>${esc(r.project)}</b><span>${r.votes}</span>` +
+        `<div class="bar"><i style="width:${(100 * r.votes / top).toFixed(0)}%"></i></div></div>`
+      ).join("") || "<p class='sub'>Todavía no hay votos. ¡Votá primero!</p>";
+      document.querySelectorAll(".row").forEach((el) => (el.onclick = () => ($("project").value = el.dataset.p)));
+    } catch (e) { $("ranking").textContent = "No pude leer el contrato: " + e.message; }
   }
-  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
   $("connect").onclick = async () => {
     const f = window.freighterApi;
@@ -73,13 +78,16 @@
     if (net.networkPassphrase !== CONFIG.networkPassphrase) return status("Cambiá Freighter a <b>Testnet</b> y probá de nuevo.");
     me = acc.address;
     $("who").textContent = "Conectado: " + me.slice(0, 6) + "…" + me.slice(-4);
+    let mine = null;
+    try { mine = await client.votedFor(me); } catch (e) { /* new, unfunded account */ }
+    if (mine) return status(`Ya votaste por <b>${esc(mine)}</b>. ¡Gracias!`);
     $("send").disabled = false;
     status("Si tu cuenta es nueva, fondeala gratis: <a target=_blank href='https://friendbot.stellar.org/?addr=" + me + "'>Friendbot</a>");
   };
 
   $("send").onclick = async () => {
-    const to = $("to").value.trim(), msg = $("msg").value.trim();
-    if (!to || !msg) return status("Completá los dos campos.");
+    const project = $("project").value.trim();
+    if (!project) return status("Escribí o elegí un proyecto.");
     $("send").disabled = true; status("Firmá en Freighter…");
     try {
       const sign = async (xdr) => {
@@ -87,11 +95,10 @@
         if (r.error) throw new Error(r.error);
         return r.signedTxXdr;
       };
-      const { hash, id } = await client.thank(me, to, msg, sign);
-      status(`✅ Listo, agradecimiento #${id}. <a target=_blank href="https://stellar.expert/explorer/testnet/tx/${hash}">Ver prueba en Stellar Expert</a>`);
-      $("msg").value = ""; refresh();
-    } catch (e) { status("❌ " + e.message); }
-    $("send").disabled = false;
+      const { hash, votes } = await client.vote(me, project, sign);
+      status(`✅ Voto registrado. <b>${esc(project)}</b> tiene ${votes} voto${votes === 1 ? "" : "s"}. <a target=_blank href="https://stellar.expert/explorer/testnet/tx/${hash}">Ver prueba en Stellar Expert</a>`);
+      refresh();
+    } catch (e) { status("❌ " + esc(e.message)); $("send").disabled = false; }
   };
 
   refresh();
