@@ -3,7 +3,7 @@
 # page at the new contract. Usage: scripts/deploy.sh [contract-name]
 set -euo pipefail
 export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
-name="${1:-gratitude}"
+name="${1:-vote}"
 cd "$(dirname "$0")/.."
 
 echo "▸ Running contract tests"

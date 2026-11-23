@@ -6,7 +6,6 @@
   },
   "auth": [
     [],
-    [],
     [
       [
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
@@ -14,16 +13,13 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
-              "function_name": "thank",
+              "function_name": "vote",
               "args": [
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
                 },
                 {
-                  "string": "Elisa"
-                },
-                {
-                  "string": "Gracias por el Commit Club!"
+                  "string": "X"
                 }
               ]
             }
@@ -31,10 +27,7 @@
           "sub_invocations": []
         }
       ]
-    ],
-    [],
-    [],
-    []
+    ]
   ],
   "ledger": {
     "protocol_version": 29,
@@ -56,49 +49,43 @@
               "key": {
                 "vec": [
                   {
-                    "symbol": "Thanks"
+                    "symbol": "Voter"
                   },
                   {
-                    "u32": 1
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
                   }
                 ]
               },
               "durability": "persistent",
               "val": {
-                "map": [
+                "string": "X"
+              }
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 518400
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "key": {
+                "vec": [
                   {
-                    "key": {
-                      "symbol": "from"
-                    },
-                    "val": {
-                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
-                    }
+                    "symbol": "Votes"
                   },
                   {
-                    "key": {
-                      "symbol": "ledger"
-                    },
-                    "val": {
-                      "u32": 0
-                    }
-                  },
-                  {
-                    "key": {
-                      "symbol": "message"
-                    },
-                    "val": {
-                      "string": "Gracias por el Commit Club!"
-                    }
-                  },
-                  {
-                    "key": {
-                      "symbol": "to"
-                    },
-                    "val": {
-                      "string": "Elisa"
-                    }
+                    "string": "X"
                   }
                 ]
+              },
+              "durability": "persistent",
+              "val": {
+                "u32": 1
               }
             }
           },
@@ -125,12 +112,16 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Count"
+                            "symbol": "Projects"
                           }
                         ]
                       },
                       "val": {
-                        "u32": 1
+                        "vec": [
+                          {
+                            "string": "X"
+                          }
+                        ]
                       }
                     }
                   ]
@@ -178,5 +169,38 @@
       }
     ]
   },
-  "events": []
+  "events": [
+    {
+      "event": {
+        "ext": "v0",
+        "contract_id": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+        "type": "contract",
+        "body": {
+          "v0": {
+            "topics": [
+              {
+                "symbol": "voted"
+              },
+              {
+                "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+              }
+            ],
+            "data": {
+              "map": [
+                {
+                  "key": {
+                    "symbol": "project"
+                  },
+                  "val": {
+                    "string": "X"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "failed_call": false
+    }
+  ]
 }
