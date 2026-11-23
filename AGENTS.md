@@ -1,6 +1,6 @@
-# Agent instructions: Proof of Thanks starter
+# Agent instructions: Commit Club Vote
 
-A Stellar **Testnet** dApp: one Soroban contract (`contracts/gratitude`) and a static web page (`docs/`) that talks to it through the Freighter wallet. GitHub Pages serves `docs/` from the `main` branch.
+A Stellar **Testnet** dApp: one Soroban contract (`contracts/vote`) and a static web page (`docs/`) that talks to it through the Freighter wallet. GitHub Pages serves `docs/` from the `main` branch.
 
 ## Hard rules
 
@@ -24,10 +24,10 @@ Always build with `stellar contract build` (the deploy script does), never with 
 
 ## Changing the idea
 
-1. Edit `contracts/gratitude/src/lib.rs` (rename is fine; keep the crate under `contracts/`) and update `src/test.rs`.
+1. Edit `contracts/vote/src/lib.rs` (rename is fine; keep the crate under `contracts/`) and update `src/test.rs`.
 2. Run `cargo test` until green.
-3. If you rename functions or arguments, update `docs/gratitude-client.js` and `docs/index.html` to match, and `scripts/smoke-test.cjs` if `thank`/`count`/`get` changed.
-4. `bash scripts/deploy.sh <crate-name>`, then the smoke test, then commit and push. GitHub Pages updates in about a minute.
+3. If you rename functions or arguments, update `docs/vote-client.js` and `docs/index.html` to match, and `scripts/smoke-test.cjs` if `vote`/`results`/`voted_for` changed.
+4. `bash scripts/deploy.sh vote`, then the smoke test, then commit and push. GitHub Pages updates in about a minute.
 
 ## Where to learn more
 

@@ -1,5 +1,5 @@
 {
-  "name": "proof-of-thanks",
+  "name": "cc-test-vote",
   "private": true,
   "scripts": {
     "test": "cargo test",

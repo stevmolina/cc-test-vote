@@ -1,30 +1,28 @@
-# Proof of Thanks: Stellar starter 💜
+# Commit Club Vote 🗳️
 
-Leave a public thank-you note on **Stellar Testnet**, signed with your wallet. No real money.
+Vote for the best **Commit Club** project on **Stellar Testnet**. One wallet, one vote; the page shows the live ranking. No real money.
 
-Built for **The Commit Club** at BAF × Stellar: Proof of Gratitude. Use it as-is or as the base for your own idea.
+Built at BAF × Stellar from the [Proof of Thanks starter](https://github.com/stevmolina/proof-of-thanks-starter).
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/stevmolina/proof-of-thanks-starter)
+**Live page:** https://stevmolina.github.io/cc-test-vote/
 
 ## What's inside
 
-- `contracts/gratitude`: a Soroban smart contract with `thank`, `count` and `get`.
-- `docs/`: a static page that connects [Freighter](https://www.freighter.app) and calls the contract. Published with GitHub Pages from `/docs`.
+- `contracts/vote`: a Soroban contract with
+  - `vote(voter, project)`: the wallet signs and casts its single vote (a second vote is rejected). Returns the project's new total.
+  - `results()`: every project with its vote count.
+  - `voted_for(voter)`: what a wallet voted for, if anything.
+- `docs/`: a static page that connects [Freighter](https://www.freighter.app), shows the ranking and lets you vote. Published with GitHub Pages from `/docs`.
 - `scripts/`: `setup.sh` (tools + funded Testnet account), `deploy.sh` (test, build, deploy), `smoke-test.cjs` (end-to-end check).
 
 ## Quick start
 
 ```bash
-bash scripts/setup.sh      # once
-bash scripts/deploy.sh     # deploy your contract to Testnet
-npx --yes serve docs        # open the page locally
+bash scripts/setup.sh         # once
+bash scripts/deploy.sh vote   # deploy the contract to Testnet
+node scripts/smoke-test.cjs me
+npx --yes serve docs          # open the page locally
 ```
-
-Then push to `main`. To publish the page: **Settings → Pages → Deploy from a branch → `main` / `/docs`** (or run `gh api -X POST repos/OWNER/REPO/pages -f "source[branch]=main" -f "source[path]=/docs"`).
-
-## With an AI agent
-
-Install the Commit Club kit and run `/stellarize`. See [stellar-commit-club](https://github.com/stevmolina/stellar-commit-club).
 
 ## Wallet setup
 
